@@ -26,6 +26,7 @@ class ViewController: UIViewController {
     //菜单页控制器
     var menuViewController: MenuViewController?
     
+    //
     var currentState = MenuState.Collapsed {
         didSet {
             //菜单展开的时候，给主页面边缘添加阴影
@@ -54,7 +55,7 @@ class ViewController: UIViewController {
         
         let imageView = UIImageView(image: UIImage(named: "back"))
         imageView.frame = UIScreen.mainScreen().bounds
-        view.addSubview(imageView)
+        self.view.addSubview(imageView)
         
         //初始化主视图
         mainNavigationViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("mainNavigation") as! UINavigationController
@@ -66,12 +67,10 @@ class ViewController: UIViewController {
         
         //添加拖动手势
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "handlePanGesture:")
-        //mainViewController.view.addGestureRecognizer(panGestureRecognizer)
         mainNavigationViewController.view.addGestureRecognizer(panGestureRecognizer)
         
         //单击收起菜单手势
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "handlePanGesture")
-        //mainViewController.view.addGestureRecognizer(tapGestureRecognizer)
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "handleTapGesture")
         mainNavigationViewController.view.addGestureRecognizer(tapGestureRecognizer)
 
     }
@@ -94,7 +93,7 @@ class ViewController: UIViewController {
     //拖动手势响应函数
     func handlePanGesture(recognizer: UIPanGestureRecognizer)
     {
-        switch recognizer.state {
+        switch (recognizer.state) {
         //刚刚开始滑动
         case .Began:
             //判断拖动方向
@@ -111,10 +110,7 @@ class ViewController: UIViewController {
             let screenWidth = view.bounds.size.width
             var centerX = recognizer.view!.center.x + recognizer.translationInView(view).x
             //页面滑倒最左侧的话就不许继续向左移动
-            if centerX < screenWidth/2
-            {
-                centerX = screenWidth/2
-            }
+            if (centerX < screenWidth/2) { centerX = screenWidth/2 }
             //计算缩放比例
             var proportion: CGFloat = (centerX - screenWidth/2)/(view.bounds.size.width - menuViewExpandedOffset)
             proportion = 1 - (1-minProportion)*proportion
@@ -131,7 +127,7 @@ class ViewController: UIViewController {
         //如果滑动结束
         case .Ended:
             //根据页面滑动是否过半，判断后面是自动展开还是收缩
-            let hasMovedhanHalfway = recognizer.view!.center.x > view.bounds.size.width
+            let hasMovedhanHalfway = (recognizer.view!.center.x > view.bounds.size.width)
             animateMainView(hasMovedhanHalfway)
         default:
             break
@@ -139,7 +135,7 @@ class ViewController: UIViewController {
     }
     
     //单击手势响应
-    func handlePanGesture()
+    func handleTapGesture()
     {
         //
         if currentState == .Expanded
@@ -205,26 +201,23 @@ class ViewController: UIViewController {
     }
     
     //主页移动动画、黑色遮罩层动画
-    func doTheAnimate(mainPoint: CGFloat, mainProportion:CGFloat, blackCoverAlpha: CGFloat, completion: ((Bool) -> Void)! = nil)
+    func doTheAnimate(mainPosition: CGFloat, mainProportion:CGFloat, blackCoverAlpha: CGFloat, completion: ((Bool) -> Void)! = nil)
     {
         //usingSpringWithDamping: 1.0  表示没有弹簧震动动画
         UIView.animateWithDuration(0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 0, options: .CurveEaseInOut, animations: {
-            self.mainNavigationViewController.view.center.x = mainProportion
+     self.mainNavigationViewController.view.center.x = mainPosition
             self.blackCover?.alpha = blackCoverAlpha
             //缩放主页面
             self.mainNavigationViewController.view.transform = CGAffineTransformScale(CGAffineTransformIdentity, mainProportion, mainProportion)
             }, completion: completion)
     }
 
-//给主页边缘添加、取消阴影
+    //给主页边缘添加、取消阴影
     func showShadowForMainViewController(shouldShowShadow: Bool)
     {
-        if shouldShowShadow
-        {
+        if shouldShowShadow {
             mainNavigationViewController.view.layer.shadowOpacity = 0.8
-        }
-        else
-        {
+        } else {
             mainNavigationViewController.view.layer.shadowOpacity = 0.0
         }
     }
@@ -235,7 +228,6 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
 
 }
 
